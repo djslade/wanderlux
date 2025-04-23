@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { IGetPingResponse } from './types/getPingResponse';
+import { IGetPingResponse } from './types/getPing.response';
 import { PingService } from './ping.service';
 
 @Controller('ping')
