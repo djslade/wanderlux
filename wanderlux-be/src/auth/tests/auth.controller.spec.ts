@@ -2,6 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from '../auth.controller';
 import { CredentialsDto } from '../dtos/credentials.dto';
 
+// test data
+const validCredentials:CredentialsDto = {
+  email: 'example@email.com',
+  password: 'password124',
+};
+
+const successMessage:string = 'User created';
+
 describe('authService', () => {
   let controller: AuthController;
 
@@ -21,30 +29,21 @@ describe('authService', () => {
 
   describe('signup', () => {
     it('should return a defined response', () => {
-      const credentials: CredentialsDto = {
-        email: 'example@email.com',
-        password: 'password123',
-      };
+      const credentials: CredentialsDto = validCredentials;
 
       expect(controller.signup(credentials)).toBeDefined();
     });
 
     it('should return a response with a message field', () => {
-      const credentials: CredentialsDto = {
-        email: 'example@email.com',
-        password: 'password124',
-      };
+      const credentials: CredentialsDto = validCredentials;
 
       expect(controller.signup(credentials).message).toBeDefined();
     });
 
     it('should return a specific message on success', () => {
-      const credentials: CredentialsDto = {
-        email: 'example@email.com',
-        password: 'password123',
-      };
+      const credentials: CredentialsDto = validCredentials;
 
-      const expectedMessage: string = 'User created';
+      const expectedMessage: string = successMessage;
 
       expect(controller.signup(credentials).message).toBe(expectedMessage);
     });
