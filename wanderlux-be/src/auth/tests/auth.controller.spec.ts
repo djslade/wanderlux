@@ -3,12 +3,12 @@ import { AuthController } from '../auth.controller';
 import { CredentialsDto } from '../dtos/credentials.dto';
 
 // test data
-const validCredentials:CredentialsDto = {
+const validCredentials: CredentialsDto = {
   email: 'example@email.com',
   password: 'password124',
 };
 
-const successMessage:string = 'User created';
+const successMessage: string = 'User created';
 
 describe('authService', () => {
   let controller: AuthController;
@@ -34,18 +34,21 @@ describe('authService', () => {
       expect(controller.signup(credentials)).toBeDefined();
     });
 
-    it('should return a response with a message field', () => {
+    it('should return a response with a message field', async () => {
       const credentials: CredentialsDto = validCredentials;
 
-      expect(controller.signup(credentials).message).toBeDefined();
+      const message = (await controller.signup(credentials)).message;
+      expect(message).toBeDefined();
     });
 
-    it('should return a specific message on success', () => {
+    it('should return a specific message on success', async () => {
       const credentials: CredentialsDto = validCredentials;
 
       const expectedMessage: string = successMessage;
 
-      expect(controller.signup(credentials).message).toBe(expectedMessage);
+      const message = (await controller.signup(credentials)).message;
+
+      expect(message).toBe(expectedMessage);
     });
   });
 });
