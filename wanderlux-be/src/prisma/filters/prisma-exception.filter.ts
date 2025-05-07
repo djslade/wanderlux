@@ -1,12 +1,12 @@
 import { ArgumentsHost, Catch, HttpStatus } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
-import { Prisma } from 'generated/prisma';
-import { IErrorResponse } from 'src/types/error.response';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { IErrorResponse } from '../../common/types/error.response';
 import { Response } from 'express';
 
-@Catch(Prisma.PrismaClientKnownRequestError)
+@Catch(PrismaClientKnownRequestError)
 export class PrismaClientExceptionFilter extends BaseExceptionFilter {
-  catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
+  catch(exception: PrismaClientKnownRequestError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
@@ -17,12 +17,16 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
           .json(this.getUniqueConstraintBody(exception));
         break;
       default:
-        super.catch(exception, host);
+        console.error('An unknown prisma client exception occurred');
+        console.error(exception);
+        response
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: 'Internal server error' });
     }
   }
 
   private getUniqueConstraintBody(
-    exception: Prisma.PrismaClientKnownRequestError,
+    exception: PrismaClientKnownRequestError,
   ): IErrorResponse {
     const modelName = exception.meta?.modelName as string | '';
     const target: string[] = (exception.meta?.target as string[]) || [];
