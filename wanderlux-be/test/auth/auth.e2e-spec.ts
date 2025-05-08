@@ -8,6 +8,12 @@ import { WanderLuxValidationPipe } from '../../src/common/pipes/wanderlux-valida
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { User } from '@prisma/client';
 
+jest.mock('bcrypt', () => {
+  const genSalt = async () => 'salt';
+  const hash = async (password: string, salt: string) => password + salt;
+  return { genSalt, hash };
+});
+
 describe('Auth e2e', () => {
   let app: INestApplication;
 
