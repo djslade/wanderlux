@@ -1,29 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from '../auth.service';
 import { AuthController } from '../auth.controller';
-import { CredentialsDto } from '../dtos/credentials.dto';
+import {
+  validEmail,
+  validPassword,
+} from '../../user/tests/__mocks__/user.testdata';
+import { mockAuthService } from './__mocks__/auth.service.mock';
 
 describe('Ping Controller', () => {
   let controller: AuthController;
-  const mockPingService = {
-    signup: jest.fn(),
-  };
-  const mockCredentialsDto: CredentialsDto = {
-    email: 'example@email.com',
-    password: 'strongPASSWORD123!',
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: mockPingService }],
+      providers: [{ provide: AuthService, useValue: mockAuthService }],
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('instantiation', () => {
@@ -32,10 +29,13 @@ describe('Ping Controller', () => {
     });
   });
 
-  describe('getPing', () => {
+  describe('signup', () => {
     it('executes service method', () => {
-      controller.signup(mockCredentialsDto);
-      expect(mockPingService.signup).toHaveBeenCalledWith(mockCredentialsDto);
+      controller.signup({ email: validEmail, password: validPassword });
+      expect(mockAuthService.signup).toHaveBeenCalledWith({
+        email: validEmail,
+        password: validPassword,
+      });
     });
   });
 });

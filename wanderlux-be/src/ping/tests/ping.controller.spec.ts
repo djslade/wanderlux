@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PingService } from '../ping.service';
 import { PingController } from '../ping.controller';
+import { mockPingService } from './__mocks__/ping.service.mock';
 
 describe('Ping Controller', () => {
   let controller: PingController;
-  const mockPingService = {
-    getPing: jest.fn(),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -18,7 +16,7 @@ describe('Ping Controller', () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('instantiation', () => {

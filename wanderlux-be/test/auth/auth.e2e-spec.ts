@@ -5,8 +5,7 @@ import * as request from 'supertest';
 import { AuthModule } from '../../src/auth/auth.module';
 import { PrismaClientExceptionFilter } from '../../src/prisma/filters/prisma-exception.filter';
 import { WanderLuxValidationPipe } from '../../src/common/pipes/wanderlux-validation.pipe';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { User } from '@prisma/client';
+import { mockPrismaService } from '../../src/prisma/tests/__mocks__/prisma.service.mock';
 
 jest.mock('bcrypt', () => {
   const genSalt = async () => 'salt';
@@ -17,35 +16,22 @@ jest.mock('bcrypt', () => {
 describe('Auth e2e', () => {
   let app: INestApplication;
 
-  const mockedPrismaService = {
-    user: {
-      create: jest
-        .fn()
-        .mockImplementation(({ data: { email, hashedPassword } }) => {
-          if (email == 'used@email.com') {
-            throw new PrismaClientKnownRequestError('', {
-              code: 'P2002',
-              clientVersion: '',
-              meta: { modelName: 'User', target: ['email'] },
-            });
-          }
-          return { id: '', email, hashedPassword } as User;
-        }),
-    },
-  };
-
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AuthModule],
     })
       .overrideProvider(PrismaService)
-      .useValue(mockedPrismaService)
+      .useValue(mockPrismaService)
       .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new WanderLuxValidationPipe());
     app.useGlobalFilters(new PrismaClientExceptionFilter());
     await app.init();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   afterAll(async () => {
