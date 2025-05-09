@@ -9,7 +9,6 @@ import {
   validEmail,
 } from './__mocks__/user.testdata';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { NotFoundException } from '@nestjs/common';
 
 describe('User Service', () => {
   let service: UserService;
@@ -57,19 +56,19 @@ describe('User Service', () => {
   describe('findByEmail', () => {
     it('returns a user', async () => {
       const user = await service.findByEmail(validEmail);
-      expect(user.email).toBe(validEmail);
-      expect(user.hashedPassword).not.toBeDefined();
+      expect(user).not.toBeNull();
+      expect(user?.email).toBe(validEmail);
+      expect(user?.hashedPassword).not.toBeDefined();
     });
 
-    it('throws error if email is not found', async () => {
-      await expect(service.findByEmail(notFoundEmail)).rejects.toThrow(
-        NotFoundException,
-      );
+    it('returns null if email is not found', async () => {
+      const user = await service.findByEmail(notFoundEmail);
+      expect(user).toBeNull();
     });
 
     it('returns hashedPassword when given optional argument', async () => {
       const user = await service.findByEmail(validEmail, true);
-      expect(user.hashedPassword).toBeDefined();
+      expect(user?.hashedPassword).toBeDefined();
     });
   });
 });

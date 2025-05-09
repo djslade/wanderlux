@@ -3,20 +3,19 @@ import { AuthService } from '../auth.service';
 import { mockUserService } from '../../user/tests/__mocks__/user.service.mock';
 import { UserService } from '../../user/user.service';
 import {
+  mismatchPassword,
+  notFoundEmail,
   validEmail,
   validPassword,
 } from '../../user/tests/__mocks__/user.testdata';
-
-jest.mock('bcrypt', () => {
-  const genSalt = async () => 'salt';
-  const hash = async (password: string, salt: string) => password + salt;
-  return { genSalt, hash };
-});
+import { mockBcrypt } from './__mocks__/bcrypt.mock';
+import { NotFoundException } from '@nestjs/common';
 
 describe('Auth Service', () => {
   let service: AuthService;
 
   beforeEach(async () => {
+    mockBcrypt();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -43,8 +42,41 @@ describe('Auth Service', () => {
         email: validEmail,
         password: validPassword,
       });
-
       expect(mockUserService.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('login', () => {
+    it('returns token', async () => {
+      const token: string = await service.login({
+        email: validEmail,
+        password: validPassword,
+      });
+      expect(token).toBeDefined();
+      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
+        validEmail,
+        true,
+      );
+    });
+
+    it('throws NotFoundException if no user found', async () => {
+      await expect(
+        service.login({ email: notFoundEmail, password: validPassword }),
+      ).rejects.toThrow(NotFoundException);
+      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
+        notFoundEmail,
+        true,
+      );
+    });
+
+    it('throws NotFoundException on mismatched password', async () => {
+      await expect(
+        service.login({ email: validEmail, password: mismatchPassword }),
+      ).rejects.toThrow(NotFoundException);
+      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
+        validEmail,
+        true,
+      );
     });
   });
 });

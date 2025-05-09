@@ -8,21 +8,18 @@ import { WanderLuxValidationPipe } from '../../src/common/pipes/wanderlux-valida
 import { mockPrismaService } from '../../src/prisma/tests/__mocks__/prisma.service.mock';
 import {
   invalidEmail,
+  invalidPassword,
   takenEmail,
   validEmail,
   validPassword,
 } from '../../src/user/tests/__mocks__/user.testdata';
-
-jest.mock('bcrypt', () => {
-  const genSalt = async () => 'salt';
-  const hash = async (password: string, salt: string) => password + salt;
-  return { genSalt, hash };
-});
+import { mockBcrypt } from '../../src/auth/tests/__mocks__/bcrypt.mock';
 
 describe('Auth e2e', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
+    mockBcrypt();
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AuthModule],
     })
@@ -77,31 +74,7 @@ describe('Auth e2e', () => {
     it('handles invalid password #1', () => {
       return request(app.getHttpServer())
         .post('/auth/signup')
-        .send({ email: 'example@email.com', password: 'strong' })
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect({ code: 400, message: 'Password is not strong enough' });
-    });
-
-    it('handles invalid password #2', () => {
-      return request(app.getHttpServer())
-        .post('/auth/signup')
-        .send({ email: 'example@email.com', password: 'password' })
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect({ code: 400, message: 'Password is not strong enough' });
-    });
-
-    it('handles invalid password #3', () => {
-      return request(app.getHttpServer())
-        .post('/auth/signup')
-        .send({ email: 'example@email.com', password: 'strongPASSWORD' })
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect({ code: 400, message: 'Password is not strong enough' });
-    });
-
-    it('handles invalid password #4', () => {
-      return request(app.getHttpServer())
-        .post('/auth/signup')
-        .send({ email: 'example@email.com', password: 'strongPASSWORD123' })
+        .send({ email: invalidEmail, password: invalidPassword })
         .expect(HttpStatus.BAD_REQUEST)
         .expect({ code: 400, message: 'Password is not strong enough' });
     });

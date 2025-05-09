@@ -12,12 +12,14 @@ export class UserService {
     });
   }
 
-  async findByEmail(email: string, returnPassword: boolean = false) {
+  async findByEmail(
+    email: string,
+    returnPassword: boolean = false,
+  ): Promise<User | null> {
     const user: User | null = await this.prismaService.user.findUnique({
       select: { id: true, email: true, hashedPassword: returnPassword },
       where: { email },
     });
-    if (user == null) throw new NotFoundException('Invalid email or password');
     return user;
   }
 }
