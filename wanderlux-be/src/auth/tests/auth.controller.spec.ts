@@ -38,4 +38,14 @@ describe('Ping Controller', () => {
       });
     });
   });
+
+  describe('login', () => {
+    it('executes service method', () => {
+      controller.login({ email: validEmail, password: validPassword });
+      expect(mockAuthService.login).toHaveBeenCalledWith({
+        email: validEmail,
+        password: validPassword,
+      });
+    });
+  });
 });

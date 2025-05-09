@@ -17,4 +17,8 @@ export class AuthService {
     const hashedPassword = await this.hashPassword(password);
     await this.userService.create(email, hashedPassword);
   }
+
+  async login(credentials: CredentialsDto): Promise<string> {
+    return 'token';
+  }
 }
