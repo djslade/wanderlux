@@ -12,14 +12,18 @@ export class AuthController {
   async signup(
     @Body() credentialsDto: CredentialsDto,
   ): Promise<ISignupResponse> {
-    await this.authService.signup(credentialsDto);
+    const { email, password } = credentialsDto;
+    const hashedPassword = await this.authService.hashPassword(password);
+    const user = await this.authService.createUser(email, hashedPassword);
     return { message: 'User created' };
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() credentialsDto: CredentialsDto): Promise<ILoginResponse> {
-    const token = await this.authService.login(credentialsDto);
+    const { email, password } = credentialsDto;
+    const user = await this.authService.authenticateUser(email, password);
+    const token = await this.authService.signAccessToken(user.id);
     return { message: 'Login succesful', token };
   }
 }

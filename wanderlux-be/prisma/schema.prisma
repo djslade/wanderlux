@@ -14,9 +14,41 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(uuid())
-  email          String   @unique
-  hashedPassword String
-  updated        DateTime @updatedAt
-  created        DateTime @default(now())
+  id            String           @id @default(uuid())
+  email         String           @unique
+  emailVerified Boolean          @default(false)
+  credentials   UserCredential[]
+  updated       DateTime         @updatedAt
+  created       DateTime         @default(now())
+}
+
+model UserCredential {
+  id             String       @id @default(uuid())
+  provider       AuthProvider
+  providerUid    String
+  hashedPassword String?
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  updated        DateTime     @updatedAt
+  created        DateTime     @default(now())
+
+  @@unique([provider, userId], name: "email_provider_unique")
+  @@unique([provider, providerUid], name: "provider_uid_unique")
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  displayName String
+  avatarUrl   String
+  updated     DateTime @updatedAt
+  created     DateTime @default(now())
+}
+
+enum AuthProvider {
+  email
+  google
+  facebook
+  github
+  apple
 }

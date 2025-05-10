@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from './types/user';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -8,16 +8,11 @@ export class UserService {
   async create(email: string, hashedPassword: string): Promise<User> {
     return await this.prismaService.user.create({
       data: { email, hashedPassword },
-      select: { id: true, email: true },
     });
   }
 
-  async findByEmail(
-    email: string,
-    returnPassword: boolean = false,
-  ): Promise<User | null> {
-    const user: User | null = await this.prismaService.user.findUnique({
-      select: { id: true, email: true, hashedPassword: returnPassword },
+  async findByEmail(email: string): Promise<User | null> {
+    const user = await this.prismaService.user.findUnique({
       where: { email },
     });
     return user;
