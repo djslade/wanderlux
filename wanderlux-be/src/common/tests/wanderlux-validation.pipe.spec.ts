@@ -1,4 +1,10 @@
-import { CredentialsDto } from '../../auth/dtos/credentials.dto';
+import {
+  invalidEmail,
+  invalidPassword,
+  validEmail,
+  validPassword,
+} from 'src/user/tests/__mocks__/user.testdata';
+import { AuthRequestDto } from '../../auth/dtos/auth-request.dto';
 import { WanderLuxValidationPipe } from '../pipes/wanderlux-validation.pipe';
 import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
 
@@ -7,13 +13,13 @@ const pipe = new WanderLuxValidationPipe();
 describe('credentials', () => {
   const metadata: ArgumentMetadata = {
     type: 'body',
-    metatype: CredentialsDto,
+    metatype: AuthRequestDto,
   };
 
   it('does not throw on valid dto', () => {
-    const credentials: CredentialsDto = {
-      email: 'example@email.com',
-      password: 'strongPASSWORD123!',
+    const credentials: AuthRequestDto = {
+      email: validEmail,
+      password: validPassword,
     };
 
     expect(() => pipe.transform(credentials, metadata)).not.toThrow(
@@ -22,9 +28,9 @@ describe('credentials', () => {
   });
 
   it('throws error on invalid email', async () => {
-    const credentials: CredentialsDto = {
-      email: 'email',
-      password: 'strongPASSWORD123!',
+    const credentials: AuthRequestDto = {
+      email: invalidEmail,
+      password: validPassword,
     };
 
     await pipe
@@ -35,9 +41,9 @@ describe('credentials', () => {
   });
 
   it('throws error on invalid password', async () => {
-    const credentials: CredentialsDto = {
-      email: 'example@email.com',
-      password: 'weakpw',
+    const credentials: AuthRequestDto = {
+      email: validEmail,
+      password: invalidPassword,
     };
 
     await pipe

@@ -30,9 +30,9 @@ describe('Ping Controller', () => {
   });
 
   describe('signup', () => {
-    it('executes service method', () => {
+    it('calls service methods', () => {
       controller.signup({ email: validEmail, password: validPassword });
-      expect(mockAuthService.signup).toHaveBeenCalledWith({
+      expect(mockAuthService.handleSignupRequest).toHaveBeenCalledWith({
         email: validEmail,
         password: validPassword,
       });
@@ -40,12 +40,13 @@ describe('Ping Controller', () => {
   });
 
   describe('login', () => {
-    it('executes service method', () => {
+    it('calls service methods', () => {
       controller.login({ email: validEmail, password: validPassword });
-      expect(mockAuthService.login).toHaveBeenCalledWith({
+      expect(mockAuthService.authenticateLoginRequest).toHaveBeenCalledWith({
         email: validEmail,
         password: validPassword,
       });
+      expect(mockAuthService.signAccessToken).toHaveBeenCalledTimes(1);
     });
   });
 });

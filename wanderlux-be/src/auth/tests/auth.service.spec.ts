@@ -3,13 +3,17 @@ import { AuthService } from '../auth.service';
 import { mockUserService } from '../../user/tests/__mocks__/user.service.mock';
 import { UserService } from '../../user/user.service';
 import {
-  mismatchPassword,
-  notFoundEmail,
+  externalEmail,
+  externalUserId,
+  localEmail,
+  newUserId,
   validEmail,
   validPassword,
 } from '../../user/tests/__mocks__/user.testdata';
 import { mockBcrypt } from './__mocks__/bcrypt.mock';
-import { NotFoundException } from '@nestjs/common';
+import { CredentialsService } from 'src/credentials/credentials.service';
+import { mockCredentialsService } from 'src/credentials/tests/__mocks__/credentials.service.mock';
+import { ConflictException } from '@nestjs/common';
 
 describe('Auth Service', () => {
   let service: AuthService;
@@ -20,6 +24,7 @@ describe('Auth Service', () => {
       providers: [
         AuthService,
         { provide: UserService, useValue: mockUserService },
+        { provide: CredentialsService, useValue: mockCredentialsService },
       ],
     }).compile();
 
@@ -36,47 +41,36 @@ describe('Auth Service', () => {
     });
   });
 
-  describe('signup', () => {
+  describe('handleSignupRequest', () => {
     it('executes service method', async () => {
-      await service.signup({
+      const actual = await service.handleSignupRequest({
         email: validEmail,
         password: validPassword,
       });
+      expect(actual).toBe(newUserId);
       expect(mockUserService.create).toHaveBeenCalled();
+      expect(mockCredentialsService.create).toHaveBeenCalled();
     });
-  });
 
-  describe('login', () => {
-    it('returns token', async () => {
-      const token: string = await service.login({
-        email: validEmail,
+    it('throws if email is unavailable', async () => {
+      expect(
+        await service.handleSignupRequest({
+          email: localEmail,
+          password: validPassword,
+        }),
+      ).rejects.toThrow(ConflictException);
+      expect(mockUserService.create).not.toHaveBeenCalled();
+      expect(mockCredentialsService.create).not.toHaveBeenCalled();
+    });
+
+    it('does not create a new user if an existing one is found', async () => {
+      const actual = await service.handleSignupRequest({
+        email: externalEmail,
         password: validPassword,
       });
-      expect(token).toBeDefined();
-      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
-        validEmail,
-        true,
-      );
-    });
-
-    it('throws NotFoundException if no user found', async () => {
-      await expect(
-        service.login({ email: notFoundEmail, password: validPassword }),
-      ).rejects.toThrow(NotFoundException);
-      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
-        notFoundEmail,
-        true,
-      );
-    });
-
-    it('throws NotFoundException on mismatched password', async () => {
-      await expect(
-        service.login({ email: validEmail, password: mismatchPassword }),
-      ).rejects.toThrow(NotFoundException);
-      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
-        validEmail,
-        true,
-      );
+      expect(actual).toBe(externalUserId);
+      expect(mockUserService.create).not.toHaveBeenCalled();
+      expect(mockCredentialsService.create).toHaveBeenCalled();
     });
   });
 });
