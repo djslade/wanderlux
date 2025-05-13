@@ -1,8 +1,17 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthRequestDto } from './dtos/auth-request.dto';
 import { ISignupResponse } from './types/signup.response';
 import { AuthService } from './auth.service';
 import { ILoginResponse } from './types/login.response';
+import { PassportLocalGuard } from './guards/passport-local.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -10,15 +19,21 @@ export class AuthController {
 
   @Post('signup')
   async signup(@Body() authRequest: AuthRequestDto): Promise<ISignupResponse> {
-    const userId = await this.authService.handleSignupRequest(authRequest);
-    return { message: 'User created', userId };
+    const user = await this.authService.handleSignupRequest(authRequest);
+    return { message: 'User created', userId: user.id };
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() authRequest: AuthRequestDto): Promise<ILoginResponse> {
-    const userId = await this.authService.authenticateLoginRequest(authRequest);
-    const token = await this.authService.signAccessToken(userId);
-    return { message: 'Login succesful', userId, token };
+  @UseGuards(PassportLocalGuard)
+  async login(@Request() req): Promise<ILoginResponse> {
+    const accessToken = await this.authService.signAccessToken(req.user.id);
+    const refreshToken = await this.authService.signRefreshToken(req.user.id);
+    return {
+      message: 'Login succesful',
+      userId: req.user.id,
+      accessToken,
+      refreshToken: refreshToken.id,
+    };
   }
 }

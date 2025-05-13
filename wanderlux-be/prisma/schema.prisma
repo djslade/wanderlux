@@ -21,6 +21,7 @@ model User {
   loginData          LoginData?
   externalLoginData  ExternalLoginData[]
   profile            Profile?
+  refreshTokens      RefreshToken[]
 }
 
 model LoginData {
@@ -53,5 +54,14 @@ model Profile {
   avatarUrl   String
   updated     DateTime @updatedAt
   created     DateTime @default(now())
-  User        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model RefreshToken {
+  id      String   @id @default(uuid())
+  userId  Int
+  expires DateTime
+  updated DateTime @updatedAt
+  created DateTime @default(now())
+  user    User     @relation(fields: [userId], references: [id])
 }

@@ -4,18 +4,36 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { CredentialsService } from 'src/credentials/credentials.service';
 import { AuthRequestDto } from './dtos/auth-request.dto';
+import {
+  ExternalLoginData,
+  LoginData,
+  RefreshToken,
+  User,
+} from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
-    private readonly credentialsService: CredentialsService,
+    private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
+
+  private async findLocalDataByEmail(email: string): Promise<LoginData | null> {
+    return await this.prismaService.loginData.findUnique({
+      where: { email },
+    });
+  }
+
+  private async findExternalByEmail(
+    email: string,
+  ): Promise<ExternalLoginData | null> {
+    return await this.prismaService.externalLoginData.findFirst({
+      where: { email },
+    });
+  }
 
   private async hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt();
@@ -23,42 +41,57 @@ export class AuthService {
     return hashedPassword;
   }
 
-  private async isEmailAvailable(email: string): Promise<boolean> {
-    const loginData = await this.credentialsService.findByEmail(email);
-    return loginData === null;
+  private async findOrCreateUser(email: string): Promise<User> {
+    const externalData = await this.findExternalByEmail(email);
+    if (externalData) {
+      const user = await this.prismaService.user.findUnique({
+        where: { id: externalData.userId },
+      });
+      if (user) return user;
+    }
+    const user = await this.prismaService.user.create({ data: {} });
+    return user;
   }
 
-  private async getUserId(email: string): Promise<number> {
-    const loginData = await this.credentialsService.findByEmail(email);
-    if (loginData) return loginData.userId;
-    const external = await this.credentialsService.findByEmailExternal(email);
-    if (external) return external.userId;
-    const user = await this.userService.create();
-    return user.id;
-  }
-
-  async handleSignupRequest(authRequest: AuthRequestDto): Promise<number> {
+  async handleSignupRequest(authRequest: AuthRequestDto): Promise<User> {
     const { email, password } = authRequest;
-    if ((await this.isEmailAvailable(email)) === false) {
+    if (!(await this.findLocalDataByEmail(email))) {
       throw new ConflictException('This email is already in use');
     }
-    const userId = await this.getUserId(email);
-    const hashedPassword = await this.hashPassword(password);
-    const loginData = await this.credentialsService.create(
-      userId,
-      email,
-      hashedPassword,
-    );
-    return loginData.userId;
+    return await this.prismaService.$transaction(async (tx) => {
+      const user = await this.findOrCreateUser(email);
+      const hashedPassword = await this.hashPassword(password);
+      await this.prismaService.loginData.create({
+        data: { userId: user.id, email, hashedPassword },
+      });
+      return user;
+    });
   }
 
-  async authenticateLoginRequest(authRequest: AuthRequestDto): Promise<number> {
+  async authenticateLoginRequest(authRequest: AuthRequestDto): Promise<User> {
     const { email, password } = authRequest;
-    const loginData = await this.credentialsService.findByEmail(email);
+    const loginData = await this.findLocalDataByEmail(email);
     if (!loginData) throw new NotFoundException('Invalid email or password');
     const matches = await bcrypt.compare(password, loginData.hashedPassword);
     if (!matches) throw new NotFoundException('Invalid email or password');
-    return loginData.userId;
+    const user = await this.prismaService.user.findUnique({
+      where: { id: loginData.userId },
+    });
+    if (!user) {
+      console.error('Authentication was successful, but no user was found');
+      console.error(loginData);
+      throw new NotFoundException('Invalid email or password');
+    }
+    return user;
+  }
+
+  async signRefreshToken(userId: number): Promise<RefreshToken> {
+    return await this.prismaService.refreshToken.create({
+      data: {
+        userId,
+        expires: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+      },
+    });
   }
 
   async signAccessToken(userId: number): Promise<string> {
