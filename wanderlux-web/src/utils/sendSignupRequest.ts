@@ -1,7 +1,7 @@
 import { getApiUrl } from "./getApiUrl";
-import type { ErrorResponse } from "../types/errorResponse";
-import type { SignupFormInput } from "../types/signupFormInput";
-import type { SignupResponse } from "../types/signupResponse";
+import type { ErrorResponse } from "../types/responses/errorResponse";
+import type { SignupFormInput } from "../types/formInput/signupFormInput";
+import type { SignupResponse } from "../types/responses/signupResponse";
 import { FailedRequestException } from "./failedRequestException";
 
 export const sendSignupRequest = async (body: SignupFormInput) => {

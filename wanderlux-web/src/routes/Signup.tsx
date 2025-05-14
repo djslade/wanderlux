@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
-import type { SignupFormInput } from "../types/signupFormInput";
+import type { SignupFormInput } from "../types/formInput/signupFormInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "../schemas/signupSchema";
 import { sendSignupRequest } from "../utils/sendSignupRequest";
@@ -8,9 +8,13 @@ import { sendLoginRequest } from "../utils/sendLoginRequest";
 import { setTokens } from "../utils/setTokens";
 import { useNavigate } from "react-router";
 import { FailedRequestException } from "../utils/failedRequestException";
+import { useStore } from "../store/store";
 
 export const Signup = () => {
   const navigate = useNavigate();
+
+  const { setUser } = useStore();
+
   const {
     register,
     handleSubmit,
@@ -19,6 +23,7 @@ export const Signup = () => {
   } = useForm<SignupFormInput>({
     resolver: zodResolver(signupSchema),
   });
+
   const onSubmit: SubmitHandler<SignupFormInput> = async (data) => {
     try {
       await sendSignupRequest(data);
@@ -30,6 +35,7 @@ export const Signup = () => {
         accessToken: res.accessToken,
         refreshToken: res.refreshToken,
       });
+      setUser(res.user);
       navigate("/feed");
     } catch (err) {
       if (!(err instanceof FailedRequestException)) throw err;

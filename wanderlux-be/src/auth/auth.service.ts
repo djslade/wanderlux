@@ -13,6 +13,7 @@ import {
   User,
 } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { REFRESH_TOKEN_DATA } from 'src/config/refresh-token-data';
 
 @Injectable()
 export class AuthService {
@@ -89,7 +90,7 @@ export class AuthService {
     return await this.prismaService.refreshToken.create({
       data: {
         userId,
-        expires: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + REFRESH_TOKEN_DATA.EXPIRES_MS),
       },
     });
   }
@@ -98,5 +99,11 @@ export class AuthService {
     const payload = { sub: userId };
     const accessToken = await this.jwtService.signAsync(payload);
     return accessToken;
+  }
+
+  async revokeRefreshToken(tokenId: string): Promise<void> {
+    await this.prismaService.refreshToken.delete({
+      where: { id: tokenId },
+    });
   }
 }
