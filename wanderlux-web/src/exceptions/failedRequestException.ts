@@ -5,6 +5,6 @@ export class FailedRequestException extends Error {
 
   constructor(res: ErrorResponse) {
     super(res.message);
-    this.code = res.code;
+    this.code = res.statusCode;
   }
 }

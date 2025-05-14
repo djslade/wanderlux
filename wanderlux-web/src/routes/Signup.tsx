@@ -7,8 +7,8 @@ import { sendSignupRequest } from "../utils/sendSignupRequest";
 import { sendLoginRequest } from "../utils/sendLoginRequest";
 import { setTokens } from "../utils/setTokens";
 import { useNavigate } from "react-router";
-import { FailedRequestException } from "../utils/failedRequestException";
-import { useStore } from "../store/store";
+import { FailedRequestException } from "../exceptions/failedRequestException";
+import { useStore } from "../config/store";
 
 export const Signup = () => {
   const navigate = useNavigate();

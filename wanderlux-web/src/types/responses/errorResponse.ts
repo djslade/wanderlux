@@ -1,5 +1,6 @@
 import type { BaseResponse } from "./baseResponse";
 
 export type ErrorResponse = BaseResponse & {
-  code: number;
+  error: string;
+  statusCode: number;
 };

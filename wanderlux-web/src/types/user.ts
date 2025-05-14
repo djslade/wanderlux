@@ -1,6 +1,6 @@
 export type User = {
   id: number;
-  updated: Date;
-  created: Date;
+  updated: string;
+  created: string;
   finishedOnboarding: boolean;
 };

@@ -2,7 +2,7 @@ import { getApiUrl } from "./getApiUrl";
 import type { ErrorResponse } from "../types/responses/errorResponse";
 import type { SignupFormInput } from "../types/formInput/signupFormInput";
 import type { SignupResponse } from "../types/responses/signupResponse";
-import { FailedRequestException } from "./failedRequestException";
+import { FailedRequestException } from "../exceptions/failedRequestException";
 
 export const sendSignupRequest = async (body: SignupFormInput) => {
   const res = await fetch(`${getApiUrl()}/auth/signup`, {

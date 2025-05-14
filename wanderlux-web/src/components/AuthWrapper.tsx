@@ -1,19 +1,18 @@
-import { useEffect, type JSX } from "react";
-import { getTokens } from "../utils/getTokens";
+import { type JSX } from "react";
 import { useNavigate } from "react-router";
+import { useUser } from "../hooks/useUser";
 
 type AuthWrapperProps = {
   child: JSX.Element;
 };
 
 export const AuthWrapper = ({ child }: AuthWrapperProps) => {
+  const { user, fetched } = useUser();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (getTokens() === null) {
-      navigate("/login", { replace: true });
-    }
-  }, []);
+  if (!fetched) return "Loading...";
+
+  if (!user) navigate("/login");
 
   return child;
 };

@@ -43,6 +43,7 @@ export class AuthController {
   @Get()
   @UseGuards(AuthGuard)
   async getUserInfo(@Request() req) {
+    console.log(typeof req.user.created);
     return { message: 'Identity confirmed', user: req.user };
   }
 
@@ -61,6 +62,7 @@ export class AuthController {
     };
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('logout')
   @UseGuards(RefreshGuard)
   async revoke(@Request() req) {

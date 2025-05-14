@@ -2,7 +2,7 @@ import { getApiUrl } from "./getApiUrl";
 import type { ErrorResponse } from "../types/responses/errorResponse";
 import type { LoginFormInput } from "../types/formInput/loginFormInput";
 import type { LoginResponse } from "../types/responses/loginResponse";
-import { FailedRequestException } from "./failedRequestException";
+import { FailedRequestException } from "../exceptions/failedRequestException";
 
 export const sendLoginRequest = async (body: LoginFormInput) => {
   const res = await fetch(`${getApiUrl()}/auth/login`, {

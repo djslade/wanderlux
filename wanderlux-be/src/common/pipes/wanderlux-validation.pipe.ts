@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  HttpStatus,
-  ValidationPipe,
-} from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 
 export class WanderLuxValidationPipe extends ValidationPipe {
@@ -11,10 +7,7 @@ export class WanderLuxValidationPipe extends ValidationPipe {
       transform: true,
       exceptionFactory: (errors: ValidationError[]) => {
         const errorMessage = this.getFirstErrorMessage(errors);
-        return new BadRequestException({
-          code: HttpStatus.BAD_REQUEST,
-          message: errorMessage,
-        });
+        return new BadRequestException(errorMessage);
       },
     });
   }

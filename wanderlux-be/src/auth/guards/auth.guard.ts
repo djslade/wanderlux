@@ -20,7 +20,7 @@ export class AuthGuard implements CanActivate {
     const token = authorization?.split(' ')[1];
 
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Access token has expired');
     }
 
     try {
@@ -32,7 +32,7 @@ export class AuthGuard implements CanActivate {
       request.user = user;
       return true;
     } catch (err) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Access token has expired');
     }
   }
 }

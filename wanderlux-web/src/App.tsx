@@ -5,6 +5,7 @@ import { Signup } from "./routes/Signup";
 import { Login } from "./routes/Login";
 import { Feed } from "./routes/Feed";
 import { UnauthWrapper } from "./components/UnauthWrapper";
+import { AuthWrapper } from "./components/AuthWrapper";
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
         <Route element={<Home />} path="/" />
         <Route element={<UnauthWrapper child={<Signup />} />} path="signup" />
         <Route element={<UnauthWrapper child={<Login />} />} path="/login" />
-        <Route element={<Feed />} path="feed" />
+        <Route element={<AuthWrapper child={<Feed />} />} path="feed" />
       </Routes>
     </BrowserRouter>
   );
