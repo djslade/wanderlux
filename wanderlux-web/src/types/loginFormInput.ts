@@ -1,4 +1,4 @@
-export interface ILoginFormInput {
+export type LoginFormInput = {
   email: string;
   password: string;
-}
+};

@@ -55,7 +55,7 @@ export class AuthService {
 
   async handleSignupRequest(authRequest: AuthRequestDto): Promise<User> {
     const { email, password } = authRequest;
-    if (!(await this.findLocalDataByEmail(email))) {
+    if ((await this.findLocalDataByEmail(email)) !== null) {
       throw new ConflictException('This email is already in use');
     }
     return await this.prismaService.$transaction(async (tx) => {

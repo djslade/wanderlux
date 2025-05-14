@@ -1,5 +1,5 @@
-import type { ILoginFormInput } from "./loginFormInput";
+import type { LoginFormInput } from "./loginFormInput";
 
-export interface ISignupFormInput extends ILoginFormInput {
+export type SignupFormInput = LoginFormInput & {
   confirmPassword: string;
-}
+};

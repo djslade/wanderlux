@@ -1,39 +1,49 @@
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
-import type { ISignupFormInput } from "../types/signupFormInput";
+import type { SignupFormInput } from "../types/signupFormInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "../schemas/signupSchema";
-import { getApiUrl } from "../config/getApiUrl";
+import { sendSignupRequest } from "../utils/sendSignupRequest";
+import { sendLoginRequest } from "../utils/sendLoginRequest";
+import { setTokens } from "../utils/setTokens";
+import { useNavigate } from "react-router";
+import { FailedRequestException } from "../utils/failedRequestException";
 
 export const Signup = () => {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
-  } = useForm<ISignupFormInput>({
+  } = useForm<SignupFormInput>({
     resolver: zodResolver(signupSchema),
   });
-  const onSubmit: SubmitHandler<ISignupFormInput> = async (data) => {
+  const onSubmit: SubmitHandler<SignupFormInput> = async (data) => {
     try {
-      const res = await fetch(`${getApiUrl()}/auth/signup`, {
-        body: JSON.stringify(data),
+      await sendSignupRequest(data);
+      const res = await sendLoginRequest({
+        email: data.email,
+        password: data.password,
       });
-      const json = await res.json();
-      if (res.status !== 201) {
-        throw new Error(json.message);
-      }
-      const loginRes = await fetch(`${getApiUrl()}/auth/login`, {
-        body: JSON.stringify(data),
+      setTokens({
+        accessToken: res.accessToken,
+        refreshToken: res.refreshToken,
       });
-      const loginJson = await loginRes.json();
-      if (loginRes.status !== 200) {
-        throw new Error(loginJson.message);
-      }
-    } catch (err) {}
+      navigate("/feed");
+    } catch (err) {
+      if (!(err instanceof FailedRequestException)) throw err;
+      setError("root.general", {
+        message: err.message,
+      });
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="">
+        <span>{errors.root?.general?.message}</span>
+      </div>
       <div className="">
         <label htmlFor="email">Email</label>
         <input type="text" {...register("email")} />

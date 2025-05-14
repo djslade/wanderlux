@@ -5,11 +5,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET } from 'src/config/jwt-secret';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [
-    PrismaService,
+    PrismaModule,
     PassportModule,
     JwtModule.register({
       global: true,
