@@ -15,28 +15,18 @@ import { ILoginResponse } from './types/login.response';
 import { PassportLocalGuard } from './guards/passport-local.guard';
 import { AuthGuard } from './guards/auth.guard';
 import { RefreshGuard } from './guards/refresh.guard';
+import { LoginEmailDto } from './dtos/login-email.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signup')
-  async signup(@Body() authRequest: AuthRequestDto): Promise<ISignupResponse> {
-    const user = await this.authService.handleSignupRequest(authRequest);
-    return { message: 'User created', user };
-  }
-
   @HttpCode(HttpStatus.OK)
-  @Post('login')
-  @UseGuards(PassportLocalGuard)
-  async login(@Request() req): Promise<ILoginResponse> {
+  @Post('login/email')
+  async loginEmail(@Body() body: LoginEmailDto) {
     const accessToken = await this.authService.signAccessToken(req.user.id);
     const refreshToken = await this.authService.signRefreshToken(req.user.id);
     return {
-      message: 'Login succesful',
-      user: req.user,
-      accessToken,
-      refreshToken: refreshToken.id,
     };
   }
 

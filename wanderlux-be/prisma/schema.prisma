@@ -14,54 +14,27 @@ datasource db {
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
-  finishedOnboarding Boolean             @default(false)
-  updated            DateTime            @updatedAt
-  created            DateTime            @default(now())
-  loginData          LoginData?
-  externalLoginData  ExternalLoginData[]
-  profile            Profile?
-  refreshTokens      RefreshToken[]
-}
-
-model LoginData {
-  id             Int      @id @default(autoincrement())
-  userId         Int      @unique
-  email          String   @unique
-  emailVerified  Boolean  @default(false)
-  hashedPassword String
-  updated        DateTime @updatedAt
-  created        DateTime @default(now())
-  user           User     @relation(fields: [userId], references: [id])
-}
-
-model ExternalLoginData {
-  id            Int      @id @default(autoincrement())
-  userId        Int
-  email         String?
-  providerName  String
-  providerToken String
-  updated       DateTime @updatedAt
-  created       DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id])
-}
-
-model Profile {
   id          Int      @id @default(autoincrement())
-  userId      Int      @unique
+  email       String   @unique
   username    String   @unique
   displayName String
   avatarUrl   String
   updated     DateTime @updatedAt
   created     DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+}
+
+model LoginData {
+  id         Int      @id @default(autoincrement())
+  email      String
+  hashedCode String
+  updated    DateTime @updatedAt
+  created    DateTime @default(now())
 }
 
 model RefreshToken {
   id      String   @id @default(uuid())
-  userId  Int
+  email   String
   expires DateTime
   updated DateTime @updatedAt
   created DateTime @default(now())
-  user    User     @relation(fields: [userId], references: [id])
 }
