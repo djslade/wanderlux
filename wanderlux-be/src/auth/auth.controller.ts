@@ -23,12 +23,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login/email')
-  async loginEmail(@Body() body: LoginEmailDto) {
-    const accessToken = await this.authService.signAccessToken(req.user.id);
-    const refreshToken = await this.authService.signRefreshToken(req.user.id);
-    return {
-    };
-  }
+  async loginEmail(@Body() body: LoginEmailDto) {}
 
   @Get()
   @UseGuards(AuthGuard)
